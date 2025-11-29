@@ -2,7 +2,12 @@ package com.poly.ban_giay_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -12,6 +17,15 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.poly.ban_giay_app.adapter.ProductAdapter;
+import com.poly.ban_giay_app.models.Product;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private SessionManager sessionManager;
@@ -19,20 +33,43 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imgAccountIcon;
     private TextView tvAccountLabel;
 
+    // RecyclerViews and Adapters for products
+    private RecyclerView rvTop, rvMen, rvSearchResults;
+    private ProductAdapter topProductAdapter, menProductAdapter, searchAdapter;
+    private List<Product> topProductList, menProductList, allProductList, searchResultList;
+    private EditText edtSearch;
+    private TextView txtSearchTitle;
+    private ImageView imgBanner;
+    private View layoutTopSection, layoutMenSection;
+    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
         sessionManager = new SessionManager(this);
+
+        // Init account navigation
         initAccountNav();
         updateAccountNavUi();
+
+        // Apply insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Init product lists
+        initProductLists();
+        
+        // Init search functionality
+        initSearch();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -56,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
     private void updateAccountNavUi() {
         if (tvAccountLabel != null) {
             if (sessionManager.isLoggedIn()) {
@@ -72,5 +110,186 @@ public class MainActivity extends AppCompatActivity {
                     : android.R.color.black);
             imgAccountIcon.setColorFilter(color);
         }
+    }
+
+    // Initialize product lists and set them to RecyclerViews
+    private void initProductLists() {
+        // Top selling products (hiển thị dạng ngang, có thể scroll)
+        rvTop = findViewById(R.id.rvTop);
+        rvTop.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
+        topProductList = new ArrayList<>();
+        topProductList.add(new Product("Giày ARK", "750,000₫", "480,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Sneaker", "680,000₫", "480,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Sneaker CROON", "680,000₫", "480,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Nike Air Max", "1,200,000₫", "950,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Adidas UltraBoost", "1,500,000₫", "1,200,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Puma RS-X", "1,000,000₫", "750,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Converse Chuck", "850,000₫", "650,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Vans Old Skool", "900,000₫", "680,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày New Balance 550", "1,100,000₫", "850,000₫", R.drawable.giaymau));
+        topProductList.add(new Product("Giày Reebok Classic", "950,000₫", "720,000₫", R.drawable.giaymau));
+
+        topProductAdapter = new ProductAdapter(topProductList);
+        rvTop.setAdapter(topProductAdapter);
+
+        // Men's shoes (nếu muốn bỏ thì xoá phần này trong layout)
+        rvMen = findViewById(R.id.rvMen);
+        rvMen.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
+        menProductList = new ArrayList<>();
+        menProductList.add(new Product("Giày ARK", "750,000₫", "480,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Sneaker", "680,000₫", "480,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Sneaker CROON", "680,000₫", "480,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Nike Air Force 1", "1,100,000₫", "880,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Adidas Stan Smith", "1,000,000₫", "750,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Puma RS-X", "1,000,000₫", "750,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Jordan 1 Retro", "1,500,000₫", "1,200,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Vans Authentic", "850,000₫", "650,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày Converse All Star", "800,000₫", "600,000₫", R.drawable.giaymau));
+        menProductList.add(new Product("Giày New Balance 574", "1,200,000₫", "950,000₫", R.drawable.giaymau));
+
+        menProductAdapter = new ProductAdapter(menProductList);
+        rvMen.setAdapter(menProductAdapter);
+        
+        // Combine all products for search
+        allProductList = new ArrayList<>();
+        allProductList.addAll(topProductList);
+        allProductList.addAll(menProductList);
+    }
+    
+    private void initSearch() {
+        edtSearch = findViewById(R.id.edtSearch);
+        txtSearchTitle = findViewById(R.id.txtSearchTitle);
+        rvSearchResults = findViewById(R.id.rvSearchResults);
+        imgBanner = findViewById(R.id.imgBanner);
+        layoutTopSection = findViewById(R.id.layoutTopSection);
+        layoutMenSection = findViewById(R.id.layoutMenSection);
+        
+        // Setup RecyclerView for search results
+        rvSearchResults.setLayoutManager(new GridLayoutManager(this, 2));
+        searchResultList = new ArrayList<>();
+        searchAdapter = new ProductAdapter(searchResultList);
+        rvSearchResults.setAdapter(searchAdapter);
+        
+        // Add text change listener - sử dụng Handler với delay để tránh mất text khi gõ tiếng Việt
+        edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Hủy runnable cũ nếu có
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+                
+                // Lấy text hiện tại
+                final String query = s.toString();
+                
+                // Tạo runnable mới với delay 300ms để đợi người dùng gõ xong
+                searchRunnable = () -> {
+                    String trimmedQuery = query.trim();
+                    if (trimmedQuery.isEmpty()) {
+                        // Show normal layout
+                        showNormalLayout();
+                    } else {
+                        // Show search results - giữ nguyên text gốc, chỉ normalize khi so sánh
+                        performSearch(trimmedQuery);
+                    }
+                };
+                
+                // Delay 300ms trước khi thực hiện tìm kiếm
+                searchHandler.postDelayed(searchRunnable, 300);
+            }
+        });
+    }
+    
+    private void performSearch(String query) {
+        searchResultList.clear();
+        
+        // Normalize query for Vietnamese search (bỏ dấu để tìm kiếm linh hoạt hơn)
+        String normalizedQuery = normalizeVietnamese(query.toLowerCase());
+        
+        // Filter products by name - tìm kiếm cả với dấu và không dấu
+        for (Product product : allProductList) {
+            String productName = product.name.toLowerCase();
+            String normalizedProductName = normalizeVietnamese(productName);
+            
+            // Tìm kiếm cả text gốc và text đã normalize
+            if (productName.contains(query.toLowerCase()) || 
+                normalizedProductName.contains(normalizedQuery) ||
+                productName.contains(normalizedQuery) ||
+                normalizedProductName.contains(query.toLowerCase())) {
+                searchResultList.add(product);
+            }
+        }
+        
+        // Update UI
+        if (searchResultList.isEmpty()) {
+            txtSearchTitle.setText("Không tìm thấy sản phẩm");
+        } else {
+            txtSearchTitle.setText("Kết quả tìm kiếm (" + searchResultList.size() + ")");
+        }
+        
+        searchAdapter.notifyDataSetChanged();
+        showSearchLayout();
+    }
+    
+    // Normalize Vietnamese text for better search (remove accents)
+    private String normalizeVietnamese(String text) {
+        if (text == null) return "";
+        return text
+            .replace("à", "a").replace("á", "a").replace("ạ", "a").replace("ả", "a").replace("ã", "a")
+            .replace("ă", "a").replace("ằ", "a").replace("ắ", "a").replace("ặ", "a").replace("ẳ", "a").replace("ẵ", "a")
+            .replace("â", "a").replace("ầ", "a").replace("ấ", "a").replace("ậ", "a").replace("ẩ", "a").replace("ẫ", "a")
+            .replace("è", "e").replace("é", "e").replace("ẹ", "e").replace("ẻ", "e").replace("ẽ", "e")
+            .replace("ê", "e").replace("ề", "e").replace("ế", "e").replace("ệ", "e").replace("ể", "e").replace("ễ", "e")
+            .replace("ì", "i").replace("í", "i").replace("ị", "i").replace("ỉ", "i").replace("ĩ", "i")
+            .replace("ò", "o").replace("ó", "o").replace("ọ", "o").replace("ỏ", "o").replace("õ", "o")
+            .replace("ô", "o").replace("ồ", "o").replace("ố", "o").replace("ộ", "o").replace("ổ", "o").replace("ỗ", "o")
+            .replace("ơ", "o").replace("ờ", "o").replace("ớ", "o").replace("ợ", "o").replace("ở", "o").replace("ỡ", "o")
+            .replace("ù", "u").replace("ú", "u").replace("ụ", "u").replace("ủ", "u").replace("ũ", "u")
+            .replace("ư", "u").replace("ừ", "u").replace("ứ", "u").replace("ự", "u").replace("ử", "u").replace("ữ", "u")
+            .replace("ỳ", "y").replace("ý", "y").replace("ỵ", "y").replace("ỷ", "y").replace("ỹ", "y")
+            .replace("đ", "d")
+            .replace("À", "A").replace("Á", "A").replace("Ạ", "A").replace("Ả", "A").replace("Ã", "A")
+            .replace("Ă", "A").replace("Ằ", "A").replace("Ắ", "A").replace("Ặ", "A").replace("Ẳ", "A").replace("Ẵ", "A")
+            .replace("Â", "A").replace("Ầ", "A").replace("Ấ", "A").replace("Ậ", "A").replace("Ẩ", "A").replace("Ẫ", "A")
+            .replace("È", "E").replace("É", "E").replace("Ẹ", "E").replace("Ẻ", "E").replace("Ẽ", "E")
+            .replace("Ê", "E").replace("Ề", "E").replace("Ế", "E").replace("Ệ", "E").replace("Ể", "E").replace("Ễ", "E")
+            .replace("Ì", "I").replace("Í", "I").replace("Ị", "I").replace("Ỉ", "I").replace("Ĩ", "I")
+            .replace("Ò", "O").replace("Ó", "O").replace("Ọ", "O").replace("Ỏ", "O").replace("Õ", "O")
+            .replace("Ô", "O").replace("Ồ", "O").replace("Ố", "O").replace("Ộ", "O").replace("Ổ", "O").replace("Ỗ", "O")
+            .replace("Ơ", "O").replace("Ờ", "O").replace("Ớ", "O").replace("Ợ", "O").replace("Ở", "O").replace("Ỡ", "O")
+            .replace("Ù", "U").replace("Ú", "U").replace("Ụ", "U").replace("Ủ", "U").replace("Ũ", "U")
+            .replace("Ư", "U").replace("Ừ", "U").replace("Ứ", "U").replace("Ự", "U").replace("Ử", "U").replace("Ữ", "U")
+            .replace("Ỳ", "Y").replace("Ý", "Y").replace("Ỵ", "Y").replace("Ỷ", "Y").replace("Ỹ", "Y")
+            .replace("Đ", "D");
+    }
+    
+    private void showSearchLayout() {
+        // Hide normal sections
+        imgBanner.setVisibility(View.GONE);
+        layoutTopSection.setVisibility(View.GONE);
+        layoutMenSection.setVisibility(View.GONE);
+        
+        // Show search results
+        txtSearchTitle.setVisibility(View.VISIBLE);
+        rvSearchResults.setVisibility(View.VISIBLE);
+    }
+    
+    private void showNormalLayout() {
+        // Show normal sections
+        imgBanner.setVisibility(View.VISIBLE);
+        layoutTopSection.setVisibility(View.VISIBLE);
+        layoutMenSection.setVisibility(View.VISIBLE);
+        
+        // Hide search results
+        txtSearchTitle.setVisibility(View.GONE);
+        rvSearchResults.setVisibility(View.GONE);
     }
 }

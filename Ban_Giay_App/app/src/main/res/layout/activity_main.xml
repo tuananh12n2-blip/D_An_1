@@ -1,149 +1,211 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="#F5F5F5">
+
+    <!-- Header với nền teal -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#006C67"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:layout_alignParentTop="true">
+
+        <!-- Search bar trắng -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_searchbox"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:gravity="center_vertical"
+            android:minHeight="44dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_search"
+                android:layout_marginRight="8dp"
+                app:tint="#888888" />
+
+            <EditText
+                android:id="@+id/edtSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Nhập từ khoá tìm kiếm"
+                android:textColorHint="#888888"
+                android:textColor="#000000"
+                android:textSize="14sp"
+                android:inputType="textCapSentences|textAutoComplete|textAutoCorrect"
+                android:imeOptions="actionSearch"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <!-- Menu icon -->
+        <ImageView
+            android:id="@+id/imgMenu"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_menu"
+            android:layout_marginLeft="12dp"
+            android:padding="4dp" />
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:paddingBottom="70dp">
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"
+        android:layout_below="@id/headerLayout">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="0dp">
 
-            <!-- SEARCH BAR -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="#006C67"
-                android:padding="6dp"
-                android:layout_marginBottom="12dp">
+            <!-- Banner -->
 
-                <!-- Search box -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:background="@drawable/bg_searchbox"
-                    android:paddingLeft="10dp"
-                    android:gravity="center_vertical">
+            <!-- Tiêu đề kết quả tìm kiếm -->
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_search"/>
-
-                    <EditText
-                        android:id="@+id/edtSearch"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Nhập từ khoá tìm kiếm"
-                        android:padding="8dp"
-                        android:background="@android:color/transparent"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="12dp"
-                    android:src="@drawable/ic_menu"/>
-            </LinearLayout>
-
-            <!-- BANNER -->
             <ImageView
                 android:id="@+id/imgBanner"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:scaleType="centerCrop"
+                android:layout_height="200dp"
                 android:layout_marginBottom="15dp"
-                android:src="@drawable/img_1"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                android:src="@drawable/img" />
 
-            <!-- TOP BÁN CHẠY -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/txtSearchTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingRight="8dp"
-                android:paddingLeft="8dp">
+                android:text="Kết quả tìm kiếm"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:padding="12dp"
+                android:paddingLeft="16dp"
+                android:visibility="gone" />
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Top bán chạy tháng 10/2025"
-                    android:textStyle="bold"
-                    android:textSize="17sp"/>
+            <!-- Recycler cho kết quả tìm kiếm -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:visibility="gone" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+            <!-- Top bán chạy -->
+            <LinearLayout
+                android:id="@+id/layoutTopSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp">
+
+                <!-- Title và Xem tất cả -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Xem tất cả"
-                    android:textColor="#006C67"
-                    android:textSize="14sp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/txtTopTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Top bán chạy tháng 10/2025"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000" />
+
+                    <TextView
+                        android:id="@+id/txtViewAllTop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Xem tất cả"
+                        android:textColor="#006C67"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvTop"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"
+                    android:paddingLeft="0dp"
+                    android:paddingRight="0dp"
+                    android:scrollbars="horizontal" />
             </LinearLayout>
 
-            <!-- TOP RECYCLER -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvTop"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"/>
-
-            <!-- GIÀY NAM -->
+            <!-- Giày nam -->
             <LinearLayout
+                android:id="@+id/layoutMenSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingRight="8dp"
-                android:paddingLeft="8dp"
-                android:layout_marginTop="20dp">
+                android:orientation="vertical"
+                android:layout_marginTop="24dp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp">
 
-                <TextView
-                    android:layout_width="0dp"
+                <!-- Title và Xem tất cả -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Giày nam"
-                    android:textSize="17sp"
-                    android:textStyle="bold"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Xem tất cả"
-                    android:textColor="#006C67"
-                    android:textSize="14sp"/>
+                    <TextView
+                        android:id="@+id/txtMenTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Giày nam"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000" />
+
+                    <TextView
+                        android:id="@+id/txtViewAllMen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Xem tất cả"
+                        android:textColor="#006C67"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvMen"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"
+                    android:layout_marginTop="12dp"
+                    android:paddingLeft="0dp"
+                    android:paddingRight="0dp"
+                    android:scrollbars="horizontal"/>
             </LinearLayout>
-
-            <!-- Men RV -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvMen"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"/>
         </LinearLayout>
-
     </ScrollView>
 
-    <!-- BOTTOM NAV -->
+    <!-- Bottom nav -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -266,7 +328,7 @@
                 android:id="@+id/tvAccountLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/account"
+                android:text="Tài khoản"
                 android:textSize="11sp"
                 android:textColor="#000000"/>
         </LinearLayout>
@@ -274,6 +336,3 @@
     </LinearLayout>
 
 </RelativeLayout>
-
-
-
