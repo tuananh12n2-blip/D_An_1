@@ -4,19 +4,18 @@
     <string name="account">Tài khoản</string>
     <string name="back">Quay lại</string>
     <string name="default_user_name">Người dùng</string>
-    <string name="logging_in">Đang đăng nhập...</string>
-    <string name="error_email_required">Vui lòng nhập email</string>
-    <string name="error_password_required">Vui lòng nhập mật khẩu</string>
-    <string name="error_confirm_password">Vui lòng xác nhận mật khẩu</string>
-    <string name="error_password_mismatch">Mật khẩu xác nhận chưa khớp</string>
-    <string name="error_please_register">Chưa có tài khoản, vui lòng đăng ký</string>
-    <string name="error_invalid_credentials">Email hoặc mật khẩu chưa đúng</string>
-    <string name="login_success">Đăng nhập thành công</string>
-    <string name="register_success">Đăng ký thành công, hãy đăng nhập</string>
+    <!-- Hiển thị khi đăng xuất thành công -->
     <string name="logout_success">Đăng xuất thành công</string>
-    <string name="error_no_connection">Không có kết nối internet</string>
+
+    <!-- Login & Register -->
+    <string name="logging_in">Đang đăng nhập...</string>
     <string name="registering">Đang đăng ký...</string>
-    <string name="sending_request">Đang gửi yêu cầu...</string>
-    <string name="error_otp_required">Vui lòng nhập mã OTP</string>
-    <string name="error_missing_otp">Vui lòng xác thực OTP trước</string>
+    <string name="forgot_password_processing">Đang xử lý yêu cầu...</string>
+
+    <!-- Validation errors -->
+    <string name="error_email_required">Vui lòng nhập email hoặc số điện thoại</string>
+    <string name="error_password_required">Vui lòng nhập mật khẩu</string>
+    <string name="error_confirm_password">Vui lòng nhập lại mật khẩu</string>
+    <string name="error_password_mismatch">Mật khẩu nhập lại không khớp</string>
+    <string name="error_no_connection">Không có kết nối mạng, vui lòng thử lại</string>
 </resources>

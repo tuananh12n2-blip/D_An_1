@@ -10,9 +10,6 @@ const UserSchema = new mongoose.Schema(
     so_dien_thoai: { type: String },
     dia_chi: { type: String },
     vatro_id: { type: mongoose.Schema.Types.ObjectId, ref: "VaiTro" },
-    otp_code: { type: String },
-    otp_expires: { type: Date },
-    otp_verified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
