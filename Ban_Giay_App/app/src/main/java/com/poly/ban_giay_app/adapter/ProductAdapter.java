@@ -53,14 +53,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
         holder.img.setImageResource(p.imageRes);
         holder.name.setText(p.name);
 
-        // Gạch ngang giá gốc (chỉ hiển thị giá, không có label)
-        String priceOldText = p.priceOld;
-        SpannableString ss = new SpannableString(priceOldText);
-        ss.setSpan(new StrikethroughSpan(), 0, priceOldText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        holder.priceOld.setText(ss);
+        if (p.priceOld != null && !p.priceOld.isEmpty()) {
+            SpannableString ss = new SpannableString(p.priceOld);
+            ss.setSpan(new StrikethroughSpan(), 0, p.priceOld.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            holder.priceOld.setVisibility(View.VISIBLE);
+            holder.priceOld.setText(ss);
+        } else {
+            holder.priceOld.setVisibility(View.GONE);
+        }
 
-        // Hiển thị giá khuyến mãi (chỉ giá, không có label)
-        holder.priceNew.setText(p.priceNew);
+        if (p.priceNew != null && !p.priceNew.isEmpty()) {
+            holder.priceNew.setVisibility(View.VISIBLE);
+            holder.priceNew.setText("Giá: " + p.priceNew);
+        } else {
+            holder.priceNew.setVisibility(View.GONE);
+        }
         
         // Click listener for product image
         holder.img.setOnClickListener(v -> {

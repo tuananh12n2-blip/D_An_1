@@ -150,7 +150,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvTop"
                     android:layout_width="match_parent"
-                    android:layout_height="280dp"
+                    android:layout_height="320dp"
                     android:paddingLeft="0dp"
                     android:paddingRight="0dp"
                     android:scrollbars="horizontal" />
@@ -196,7 +196,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvMen"
                     android:layout_width="match_parent"
-                    android:layout_height="280dp"
+                    android:layout_height="320dp"
                     android:layout_marginTop="12dp"
                     android:paddingLeft="0dp"
                     android:paddingRight="0dp"
