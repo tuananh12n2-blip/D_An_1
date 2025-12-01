@@ -41,6 +41,10 @@ public interface ApiService {
     @POST("auth/forgot-password")
     Call<BaseResponse<Void>> forgotPassword(@Body ForgotPasswordRequest request);
 
+    // POST http://YOUR_IP:3000/api/auth/verify-otp-reset-password
+    @POST("auth/verify-otp-reset-password")
+    Call<BaseResponse<Void>> verifyOtpAndResetPassword(@Body com.poly.ban_giay_app.network.request.VerifyOtpRequest request);
+
     // ==================== PRODUCT APIs ====================
     
     // GET http://YOUR_IP:3000/api/product

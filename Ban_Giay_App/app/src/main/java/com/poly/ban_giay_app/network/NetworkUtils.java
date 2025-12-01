@@ -44,24 +44,68 @@ public final class NetworkUtils {
         try {
             String raw = errorBody.string();
             if (TextUtils.isEmpty(raw)) {
-                return "Có lỗi xảy ra. Vui lòng thử lại.";
+                return getDefaultErrorMessage(response.code());
             }
-            JSONObject json = new JSONObject(raw);
-            if (json.has("message")) {
-                return json.getString("message");
+            
+            // Check if response is HTML (starts with <!DOCTYPE, <html, etc.)
+            String trimmed = raw.trim();
+            if (trimmed.startsWith("<!DOCTYPE") || trimmed.startsWith("<html") || 
+                trimmed.startsWith("<?xml") || trimmed.startsWith("<")) {
+                Log.w(TAG, "Server returned HTML instead of JSON. Response code: " + response.code());
+                return getDefaultErrorMessage(response.code());
             }
-            if (json.has("error")) {
-                return json.getString("error");
+            
+            // Try to parse as JSON
+            try {
+                JSONObject json = new JSONObject(raw);
+                if (json.has("message")) {
+                    return json.getString("message");
+                }
+                if (json.has("error")) {
+                    return json.getString("error");
+                }
+                // If JSON is valid but doesn't have message/error, return default
+                return getDefaultErrorMessage(response.code());
+            } catch (org.json.JSONException e) {
+                // Not valid JSON, return default error message
+                Log.w(TAG, "Response is not valid JSON: " + raw.substring(0, Math.min(100, raw.length())));
+                return getDefaultErrorMessage(response.code());
             }
-            return raw;
         } catch (Exception e) {
             Log.e(TAG, "extractErrorMessage: ", e);
-            return "Không thể kết nối máy chủ.";
+            return getDefaultErrorMessage(response != null ? response.code() : 0);
         } finally {
             try {
                 errorBody.close();
             } catch (Exception ignored) {
             }
+        }
+    }
+    
+    private static String getDefaultErrorMessage(int statusCode) {
+        switch (statusCode) {
+            case 400:
+                return "Yêu cầu không hợp lệ. Vui lòng kiểm tra lại thông tin.";
+            case 401:
+                return "Không có quyền truy cập. Vui lòng đăng nhập lại.";
+            case 403:
+                return "Bạn không có quyền thực hiện thao tác này.";
+            case 404:
+                return "Không tìm thấy tài nguyên. Vui lòng thử lại.";
+            case 500:
+            case 502:
+            case 503:
+                return "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.";
+            case 0:
+                return "Không thể kết nối đến máy chủ. Kiểm tra kết nối mạng.";
+            default:
+                if (statusCode >= 500) {
+                    return "Lỗi máy chủ. Vui lòng thử lại sau.";
+                } else if (statusCode >= 400) {
+                    return "Có lỗi xảy ra. Vui lòng thử lại.";
+                } else {
+                    return "Không thể kết nối máy chủ.";
+                }
         }
     }
 }

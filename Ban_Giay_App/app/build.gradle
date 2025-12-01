@@ -14,9 +14,10 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        // Base URL cho API - dùng IP máy tính khi test trên thiết bị thật
-        // Nếu test trên emulator, đổi thành: "http://10.0.2.2:3000/api/"
-        buildConfigField "String", "API_BASE_URL", "\"http://192.168.0.100:3000/api/\""
+        // Base URL cho API
+        // - Emulator: dùng "http://10.0.2.2:3000/api/" (10.0.2.2 là IP đặc biệt của emulator để kết nối đến localhost của máy host)
+        // - Thiết bị thật: dùng IP máy tính trong mạng LAN, ví dụ "http://192.168.0.100:3000/api/"
+        buildConfigField "String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\""
     }
 
     buildFeatures {

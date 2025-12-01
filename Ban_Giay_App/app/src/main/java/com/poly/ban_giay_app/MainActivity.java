@@ -196,10 +196,16 @@ public class MainActivity extends AppCompatActivity {
                             });
                         } else {
                             Log.w("MainActivity", "Top products list is empty or null");
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity.this, "Không có sản phẩm bán chạy", Toast.LENGTH_SHORT).show();
+                            });
                         }
                     } else {
                         String errorMsg = NetworkUtils.extractErrorMessage(response);
                         Log.e("MainActivity", "Error loading top products: " + errorMsg + ", Code: " + response.code());
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity.this, "Lỗi tải sản phẩm: " + errorMsg, Toast.LENGTH_SHORT).show();
+                        });
                         if (response.errorBody() != null) {
                             try {
                                 String errorBody = response.errorBody().string();
@@ -266,10 +272,16 @@ public class MainActivity extends AppCompatActivity {
                             });
                         } else {
                             Log.w("MainActivity", "Men products list is empty or null");
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity.this, "Không có sản phẩm nam", Toast.LENGTH_SHORT).show();
+                            });
                         }
                     } else {
                         String errorMsg = NetworkUtils.extractErrorMessage(response);
                         Log.e("MainActivity", "Error loading men products: " + errorMsg + ", Code: " + response.code());
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity.this, "Lỗi tải sản phẩm: " + errorMsg, Toast.LENGTH_SHORT).show();
+                        });
                         if (response.errorBody() != null) {
                             try {
                                 String errorBody = response.errorBody().string();
@@ -321,12 +333,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String name = productResponse.getName();
-        String priceOld = productResponse.getPriceOld();
-        String priceNew = productResponse.getPriceNew();
         String imageUrl = productResponse.getImageUrl();
 
         Log.d("MainActivity", "Converting product - Name: " + name + 
-              ", PriceOld: " + priceOld + ", PriceNew: " + priceNew + 
               ", ImageUrl: " + imageUrl);
 
         // Đảm bảo có ít nhất tên sản phẩm
@@ -335,30 +344,25 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        // Format giá - nếu là số, format thành VNĐ
-        if (priceOld != null && !priceOld.trim().isEmpty() && priceOld.matches("\\d+")) {
-            try {
-                int price = Integer.parseInt(priceOld);
-                priceOld = formatPrice(price);
-            } catch (NumberFormatException e) {
-                // Giữ nguyên nếu không parse được
-            }
+        // Lấy giá trực tiếp từ Integer (từ MongoDB: gia_goc và gia_khuyen_mai)
+        Integer giaGoc = productResponse.getGiaGoc();
+        Integer giaKhuyenMai = productResponse.getGiaKhuyenMai();
+        
+        String priceOld = null;
+        String priceNew = null;
+
+        // Format giá gốc (gia_goc) - hiển thị khi có giá khuyến mãi
+        if (giaGoc != null && giaGoc > 0) {
+            priceOld = formatPrice(giaGoc);
         }
         
-        if (priceNew != null && !priceNew.trim().isEmpty() && priceNew.matches("\\d+")) {
-            try {
-                int price = Integer.parseInt(priceNew);
-                priceNew = formatPrice(price);
-            } catch (NumberFormatException e) {
-                // Giữ nguyên nếu không parse được
-            }
-        }
-
-        // Nếu không có giá mới, dùng giá cũ làm giá mới
-        if ((priceNew == null || priceNew.trim().isEmpty()) && 
-            (priceOld != null && !priceOld.trim().isEmpty())) {
-            priceNew = priceOld;
-            priceOld = "";
+        // Format giá khuyến mãi (gia_khuyen_mai) - giá hiển thị chính
+        if (giaKhuyenMai != null && giaKhuyenMai > 0) {
+            priceNew = formatPrice(giaKhuyenMai);
+        } else if (giaGoc != null && giaGoc > 0) {
+            // Nếu không có giá khuyến mãi, dùng giá gốc làm giá mới
+            priceNew = formatPrice(giaGoc);
+            priceOld = null; // Không hiển thị giá cũ nếu không có khuyến mãi
         }
 
         // Nếu không có giá nào, set giá mặc định
@@ -366,16 +370,30 @@ public class MainActivity extends AppCompatActivity {
             priceNew = "0₫";
         }
 
+        Log.d("MainActivity", "Formatted prices - Old: " + priceOld + ", New: " + priceNew);
+
         // Tạo Product với URL ảnh (nếu có) hoặc resource mặc định
         if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-            Product product = new Product(name, priceOld != null ? priceOld : "", priceNew, imageUrl);
+            Product product = new Product(
+                name, 
+                priceOld != null ? priceOld : "", 
+                priceNew, 
+                imageUrl
+            );
             // Đảm bảo imageUrl được set
             product.imageUrl = imageUrl;
+            Log.d("MainActivity", "Created product with imageUrl: " + imageUrl);
             return product;
         } else {
             // Nếu không có URL ảnh, dùng ảnh mặc định
-            Product product = new Product(name, priceOld != null ? priceOld : "", priceNew, R.drawable.giaymau);
+            Product product = new Product(
+                name, 
+                priceOld != null ? priceOld : "", 
+                priceNew, 
+                R.drawable.giaymau
+            );
             product.imageUrl = null; // Không có URL, sẽ dùng imageRes
+            Log.d("MainActivity", "Created product with default image");
             return product;
         }
     }
