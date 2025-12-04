@@ -3,9 +3,12 @@ package com.poly.ban_giay_app;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -29,8 +32,11 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText edtPhoneEmail, edtPassword, edtConfirmPassword;
     private Button btnRegister;
     private View btnBack;
+    private ImageView btnTogglePassword, btnToggleConfirmPassword;
     private ProgressDialog progressDialog;
     private ApiService apiService;
+    private boolean isPasswordVisible = false;
+    private boolean isConfirmPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +64,49 @@ public class RegisterActivity extends AppCompatActivity {
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         btnBack = findViewById(R.id.btnBack);
+        btnTogglePassword = findViewById(R.id.btnTogglePassword);
+        btnToggleConfirmPassword = findViewById(R.id.btnToggleConfirmPassword);
     }
 
     private void bindActions() {
         btnBack.setOnClickListener(v -> finish());
         btnRegister.setOnClickListener(v -> attemptRegister());
+        
+        // Toggle password visibility
+        btnTogglePassword.setOnClickListener(v -> togglePasswordVisibility());
+        btnToggleConfirmPassword.setOnClickListener(v -> toggleConfirmPasswordVisibility());
+    }
+    
+    private void togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Hide password
+            edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            btnTogglePassword.setImageResource(R.drawable.ic_eye_off);
+            isPasswordVisible = false;
+        } else {
+            // Show password
+            edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            btnTogglePassword.setImageResource(R.drawable.ic_eye);
+            isPasswordVisible = true;
+        }
+        // Move cursor to end
+        edtPassword.setSelection(edtPassword.getText().length());
+    }
+    
+    private void toggleConfirmPasswordVisibility() {
+        if (isConfirmPasswordVisible) {
+            // Hide password
+            edtConfirmPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            btnToggleConfirmPassword.setImageResource(R.drawable.ic_eye_off);
+            isConfirmPasswordVisible = false;
+        } else {
+            // Show password
+            edtConfirmPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            btnToggleConfirmPassword.setImageResource(R.drawable.ic_eye);
+            isConfirmPasswordVisible = true;
+        }
+        // Move cursor to end
+        edtConfirmPassword.setSelection(edtConfirmPassword.getText().length());
     }
 
     private void attemptRegister() {
