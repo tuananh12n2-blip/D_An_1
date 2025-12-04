@@ -4,9 +4,12 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -29,9 +32,11 @@ public class LoginActivity extends AppCompatActivity {
     private EditText edtPhoneEmail, edtPassword;
     private Button btnLogin, btnRegister, btnForgotPassword;
     private View btnBack;
+    private ImageView btnTogglePassword;
     private SessionManager sessionManager;
     private ProgressDialog progressDialog;
     private ApiService apiService;
+    private boolean isPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         btnForgotPassword = findViewById(R.id.btnForgotPassword);
         btnBack = findViewById(R.id.btnBack);
+        btnTogglePassword = findViewById(R.id.btnTogglePassword);
     }
 
     private void bindActions() {
@@ -68,6 +74,25 @@ public class LoginActivity extends AppCompatActivity {
         btnForgotPassword.setOnClickListener(v -> startActivity(new Intent(this, ForgotPasswordActivity.class)));
         btnRegister.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
         btnLogin.setOnClickListener(v -> attemptLogin());
+        
+        // Toggle password visibility
+        btnTogglePassword.setOnClickListener(v -> togglePasswordVisibility());
+    }
+    
+    private void togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Hide password
+            edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            btnTogglePassword.setImageResource(R.drawable.ic_eye_off);
+            isPasswordVisible = false;
+        } else {
+            // Show password
+            edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            btnTogglePassword.setImageResource(R.drawable.ic_eye);
+            isPasswordVisible = true;
+        }
+        // Move cursor to end
+        edtPassword.setSelection(edtPassword.getText().length());
     }
 
     private void attemptLogin() {

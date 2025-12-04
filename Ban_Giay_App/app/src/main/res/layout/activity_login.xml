@@ -77,16 +77,35 @@
             android:layout_marginBottom="16dp" />
 
         <!-- Password Input -->
-        <EditText
-            android:id="@+id/edtPassword"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:hint="Mật khẩu"
-            android:inputType="textPassword"
-            android:padding="16dp"
-            android:background="@drawable/bg_input_field"
-            android:textSize="16sp"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="24dp">
+            
+            <EditText
+                android:id="@+id/edtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Mật khẩu"
+                android:inputType="textPassword"
+                android:padding="16dp"
+                android:paddingEnd="48dp"
+                android:background="@drawable/bg_input_field"
+                android:textSize="16sp" />
+            
+            <ImageView
+                android:id="@+id/btnTogglePassword"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_eye_off"
+                android:contentDescription="Toggle password visibility"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp" />
+        </RelativeLayout>
 
         <!-- Login Button -->
         <Button
