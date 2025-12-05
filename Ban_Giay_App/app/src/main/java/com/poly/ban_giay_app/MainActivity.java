@@ -238,11 +238,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 t.printStackTrace();
                 runOnUiThread(() -> {
-                    String errorMsg = t.getMessage();
-                    if (errorMsg == null || errorMsg.isEmpty()) {
-                        errorMsg = "Không thể kết nối đến server. Kiểm tra lại IP và server đang chạy.";
-                    }
-                    Toast.makeText(MainActivity.this, "Lỗi: " + errorMsg, Toast.LENGTH_LONG).show();
+                    String errorMsg = getErrorMessage(t);
+                    Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 });
             }
         });
@@ -314,11 +311,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 t.printStackTrace();
                 runOnUiThread(() -> {
-                    String errorMsg = t.getMessage();
-                    if (errorMsg == null || errorMsg.isEmpty()) {
-                        errorMsg = "Không thể kết nối đến server. Kiểm tra lại IP và server đang chạy.";
-                    }
-                    Toast.makeText(MainActivity.this, "Lỗi: " + errorMsg, Toast.LENGTH_LONG).show();
+                    String errorMsg = getErrorMessage(t);
+                    Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 });
             }
         });
@@ -328,6 +322,45 @@ public class MainActivity extends AppCompatActivity {
         allProductList.clear();
         allProductList.addAll(topProductList);
         allProductList.addAll(menProductList);
+    }
+
+    /**
+     * Chuyển đổi lỗi kỹ thuật thành thông báo dễ hiểu cho người dùng
+     */
+    private String getErrorMessage(Throwable t) {
+        if (t == null) {
+            return "Không thể kết nối đến server. Vui lòng kiểm tra lại.";
+        }
+
+        String errorMsg = t.getMessage();
+        if (errorMsg == null || errorMsg.isEmpty()) {
+            return "Không thể kết nối đến server. Vui lòng kiểm tra lại.";
+        }
+
+        // Kiểm tra các loại lỗi phổ biến
+        String lowerMsg = errorMsg.toLowerCase();
+        
+        if (lowerMsg.contains("failed to connect") || lowerMsg.contains("connection refused") || 
+            lowerMsg.contains("unable to resolve host") || lowerMsg.contains("network is unreachable")) {
+            // Kiểm tra kết nối mạng
+            if (!NetworkUtils.isConnected(this)) {
+                return "Không có kết nối mạng. Vui lòng kiểm tra WiFi hoặc dữ liệu di động.";
+            }
+            return "Không thể kết nối đến server API. Vui lòng đảm bảo:\n" +
+                   "1. Server đang chạy tại http://localhost:3000\n" +
+                   "2. Đang dùng Android Emulator (10.0.2.2) hoặc IP đúng nếu dùng thiết bị thật";
+        }
+        
+        if (lowerMsg.contains("timeout") || lowerMsg.contains("timed out")) {
+            return "Kết nối quá thời gian chờ. Server có thể đang quá tải hoặc không phản hồi.";
+        }
+        
+        if (lowerMsg.contains("ssl") || lowerMsg.contains("certificate")) {
+            return "Lỗi bảo mật kết nối. Vui lòng kiểm tra cấu hình SSL.";
+        }
+
+        // Trả về thông báo gốc nếu không phải lỗi phổ biến
+        return "Lỗi: " + errorMsg;
     }
 
     /**

@@ -2,11 +2,13 @@ package com.poly.ban_giay_app.network;
 
 import com.poly.ban_giay_app.network.model.AuthResponse;
 import com.poly.ban_giay_app.network.model.BaseResponse;
+import com.poly.ban_giay_app.network.model.PaymentResponse;
 import com.poly.ban_giay_app.network.model.ProductListResponse;
 import com.poly.ban_giay_app.network.model.ProductResponse;
 import com.poly.ban_giay_app.network.model.UserResponse;
 import com.poly.ban_giay_app.network.request.ForgotPasswordRequest;
 import com.poly.ban_giay_app.network.request.LoginRequest;
+import com.poly.ban_giay_app.network.request.PaymentRequest;
 import com.poly.ban_giay_app.network.request.ProductRequest;
 import com.poly.ban_giay_app.network.request.RegisterRequest;
 import com.poly.ban_giay_app.network.request.StockUpdateRequest;
@@ -101,6 +103,12 @@ public interface ApiService {
     // Xóa sản phẩm (Admin)
     @DELETE("product/{id}")
     Call<BaseResponse<Void>> deleteProduct(@Path("id") String id);
+
+    // ==================== PAYMENT APIs ====================
+    // POST http://YOUR_IP:3000/api/payment
+    // Tạo thanh toán mới
+    @POST("payment")
+    Call<BaseResponse<PaymentResponse>> createPayment(@Body PaymentRequest request);
 
     // ==================== LEGACY APIs (Giữ lại để tương thích) ====================
     // Lấy danh sách sản phẩm bán chạy (legacy)
