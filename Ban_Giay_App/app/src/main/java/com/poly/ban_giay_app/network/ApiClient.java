@@ -1,8 +1,10 @@
 package com.poly.ban_giay_app.network;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.poly.ban_giay_app.BuildConfig;
+import com.poly.ban_giay_app.SessionManager;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +25,14 @@ public final class ApiClient {
     private static final int MAX_RETRIES = 2;
     
     private static ApiService apiService;
+    private static Context applicationContext;
 
     private ApiClient() {
         // no-op
+    }
+
+    public static void init(Context context) {
+        applicationContext = context.getApplicationContext();
     }
 
     public static ApiService getApiService() {
@@ -42,6 +49,28 @@ public final class ApiClient {
     private static Retrofit buildRetrofit() {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        // Auth interceptor để thêm token vào header
+        Interceptor authInterceptor = new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request original = chain.request();
+                Request.Builder requestBuilder = original.newBuilder();
+
+                // Thêm token vào header nếu có
+                if (applicationContext != null) {
+                    SessionManager sessionManager = new SessionManager(applicationContext);
+                    String token = sessionManager.getToken();
+                    if (token != null && !token.isEmpty()) {
+                        requestBuilder.addHeader("Authorization", "Bearer " + token);
+                        Log.d(TAG, "Added token to request header");
+                    }
+                }
+
+                Request request = requestBuilder.build();
+                return chain.proceed(request);
+            }
+        };
 
         // Retry interceptor để tự động retry khi có lỗi network
         Interceptor retryInterceptor = new Interceptor() {
@@ -93,6 +122,7 @@ public final class ApiClient {
         };
 
         OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(authInterceptor) // Thêm token vào header
                 .addInterceptor(retryInterceptor)
                 .addInterceptor(logging)
                 .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)

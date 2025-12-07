@@ -22,6 +22,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.poly.ban_giay_app.adapter.CartAdapter;
 import com.poly.ban_giay_app.models.CartItem;
+import com.poly.ban_giay_app.network.ApiClient;
+import com.poly.ban_giay_app.network.ApiService;
+import com.poly.ban_giay_app.network.NetworkUtils;
+import com.poly.ban_giay_app.network.model.BaseResponse;
+import com.poly.ban_giay_app.network.model.OrderResponse;
+import com.poly.ban_giay_app.network.request.OrderRequest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class CartActivity extends AppCompatActivity {
@@ -35,10 +48,12 @@ public class CartActivity extends AppCompatActivity {
     private EditText edtSearch;
     private ImageView imgBell;
     private ImageView btnBack;
+    private ImageView btnViewOrders;
     private View navAccount;
     private ImageView imgAccountIcon;
     private TextView tvAccountLabel;
     private SessionManager sessionManager;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +63,8 @@ public class CartActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         cartManager = CartManager.getInstance();
+        ApiClient.init(this);
+        apiService = ApiClient.getApiService();
 
         // Apply insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -82,6 +99,7 @@ public class CartActivity extends AppCompatActivity {
         edtSearch = findViewById(R.id.edtSearch);
         imgBell = findViewById(R.id.imgBell);
         btnBack = findViewById(R.id.btnBack);
+        btnViewOrders = findViewById(R.id.btnViewOrders);
     }
 
     private void setupNavigation() {
@@ -99,6 +117,20 @@ public class CartActivity extends AppCompatActivity {
                 Intent intent = new Intent(CartActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+            });
+        }
+
+        // View Orders button
+        if (btnViewOrders != null) {
+            btnViewOrders.setOnClickListener(v -> {
+                if (sessionManager.isLoggedIn()) {
+                    Intent intent = new Intent(CartActivity.this, OrderActivity.class);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Vui lòng đăng nhập để xem đơn hàng", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(CartActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }
             });
         }
     }
@@ -171,8 +203,15 @@ public class CartActivity extends AppCompatActivity {
                 Toast.makeText(this, "Vui lòng chọn ít nhất một sản phẩm", Toast.LENGTH_SHORT).show();
                 return;
             }
-            // TODO: Navigate to checkout
-            Toast.makeText(this, "Đang chuyển đến trang thanh toán...", Toast.LENGTH_SHORT).show();
+            
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(this, "Vui lòng đăng nhập để thanh toán", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(CartActivity.this, LoginActivity.class);
+                startActivity(intent);
+                return;
+            }
+            
+            createOrder();
         });
     }
 
@@ -207,6 +246,94 @@ public class CartActivity extends AppCompatActivity {
     private String formatPrice(long price) {
         // Format giống như MainActivity: "199.000₫"
         return String.format("%,d₫", price).replace(",", ".");
+    }
+
+    private void createOrder() {
+        if (!NetworkUtils.isConnected(this)) {
+            Toast.makeText(this, "Không có kết nối mạng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<CartItem> selectedItems = cartManager.getSelectedItems();
+        if (selectedItems.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn ít nhất một sản phẩm", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Tạo OrderRequest
+        OrderRequest request = new OrderRequest();
+        request.setUserId(userId);
+        
+        List<OrderRequest.OrderItemRequest> orderItems = new ArrayList<>();
+        long totalPrice = 0;
+        
+        for (CartItem cartItem : selectedItems) {
+            if (cartItem.product.id == null || cartItem.product.id.isEmpty()) {
+                Toast.makeText(this, "Sản phẩm " + cartItem.product.name + " không có ID, không thể tạo đơn hàng", Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            long itemPrice = Long.parseLong(cartItem.product.priceNew.replaceAll("[^0-9]", ""));
+            long itemTotal = itemPrice * cartItem.quantity;
+            totalPrice += itemTotal;
+            
+            OrderRequest.OrderItemRequest orderItem = new OrderRequest.OrderItemRequest(
+                cartItem.product.id,
+                cartItem.product.name,
+                cartItem.quantity,
+                cartItem.size,
+                itemPrice
+            );
+            orderItems.add(orderItem);
+        }
+        
+        request.setItems(orderItems);
+        request.setTongTien(totalPrice);
+        request.setDiaChiGiaoHang(""); // TODO: Lấy từ form nhập địa chỉ
+        request.setSoDienThoai(""); // TODO: Lấy từ form nhập số điện thoại
+        request.setGhiChu("");
+
+        btnCheckout.setEnabled(false);
+        btnCheckout.setText("Đang xử lý...");
+
+        apiService.createOrder(request).enqueue(new Callback<BaseResponse<OrderResponse>>() {
+            @Override
+            public void onResponse(Call<BaseResponse<OrderResponse>> call, Response<BaseResponse<OrderResponse>> response) {
+                btnCheckout.setEnabled(true);
+                btnCheckout.setText("Thanh toán");
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    BaseResponse<OrderResponse> body = response.body();
+                    if (body.getSuccess()) {
+                        Toast.makeText(CartActivity.this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
+                        // Xóa các sản phẩm đã chọn khỏi giỏ hàng
+                        cartManager.removeSelectedItems();
+                        cartAdapter.notifyDataSetChanged();
+                        updateUI();
+                        // Chuyển đến màn hình đơn hàng
+                        Intent intent = new Intent(CartActivity.this, OrderActivity.class);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(CartActivity.this, body.getMessage() != null ? body.getMessage() : "Không thể tạo đơn hàng", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(CartActivity.this, NetworkUtils.extractErrorMessage(response), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse<OrderResponse>> call, Throwable t) {
+                btnCheckout.setEnabled(true);
+                btnCheckout.setText("Thanh toán");
+                Toast.makeText(CartActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
 

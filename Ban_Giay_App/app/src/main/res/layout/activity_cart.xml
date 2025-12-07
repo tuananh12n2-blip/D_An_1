@@ -75,6 +75,20 @@
             android:layout_marginLeft="12dp"
             android:padding="4dp"
             app:tint="#FFFFFF" />
+
+        <!-- Order icon -->
+        <ImageView
+            android:id="@+id/btnViewOrders"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_order"
+            android:layout_marginLeft="12dp"
+            android:padding="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            app:tint="#FFFFFF"
+            android:contentDescription="Xem đơn hàng" />
     </LinearLayout>
 
     <!-- Tiêu đề Giỏ hàng -->

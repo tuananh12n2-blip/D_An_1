@@ -45,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         sessionManager = new SessionManager(this);
+        ApiClient.init(this);
         apiService = ApiClient.getApiService();
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.logging_in));

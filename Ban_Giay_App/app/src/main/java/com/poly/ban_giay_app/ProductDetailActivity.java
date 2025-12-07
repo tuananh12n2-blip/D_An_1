@@ -7,6 +7,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StrikethroughSpan;
 import android.text.style.UnderlineSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -68,6 +69,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
 
         sessionManager = new SessionManager(this);
+        
+        // Set context cho CartManager để có thể gọi API
+        CartManager.getInstance().setContext(this);
 
         initViews();
         bindActions();
@@ -118,15 +122,48 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // Add to cart
         btnAddToCart.setOnClickListener(v -> {
+            // Kiểm tra đăng nhập
             if (!ensureLoggedIn()) {
                 return;
             }
+            
+            // Kiểm tra size đã được chọn chưa
             if (selectedSize.isEmpty()) {
-                Toast.makeText(this, "Vui lòng chọn kích thước", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng chọn kích thước trước khi thêm vào giỏ hàng", Toast.LENGTH_LONG).show();
                 return;
             }
-            CartManager.getInstance().addToCart(product, selectedSize, quantity);
+            
+            // Disable button để tránh click nhiều lần
+            btnAddToCart.setEnabled(false);
+            btnAddToCart.setText("Đang thêm...");
+            
+            // Hiển thị thông báo ngay lập tức
             Toast.makeText(this, "Đã thêm vào giỏ hàng thành công!", Toast.LENGTH_SHORT).show();
+            
+            CartManager.getInstance().addToCart(product, selectedSize, quantity, new CartManager.CartCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    runOnUiThread(() -> {
+                        // Nếu message khác với thông báo mặc định, hiển thị lại
+                        if (message.contains("chỉ lưu cục bộ") && !message.equals("Đã thêm vào giỏ hàng thành công!")) {
+                            Toast.makeText(ProductDetailActivity.this, message, Toast.LENGTH_LONG).show();
+                        }
+                        btnAddToCart.setEnabled(true);
+                        btnAddToCart.setText("THÊM VÀO GIỎ");
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        // Nếu có lỗi khi lưu lên server, vẫn đã thêm vào giỏ hàng cục bộ
+                        // Không cần hiển thị lại vì đã hiển thị ở trên
+                        Log.w("ProductDetailActivity", "Error saving to server: " + error);
+                        btnAddToCart.setEnabled(true);
+                        btnAddToCart.setText("THÊM VÀO GIỎ");
+                    });
+                }
+            });
         });
 
         // Buy now

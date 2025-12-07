@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         sessionManager = new SessionManager(this);
+        // Khởi tạo ApiClient với context để có thể thêm token vào header
+        ApiClient.init(this);
         apiService = ApiClient.getApiService();
 
         // Init account navigation
@@ -674,11 +676,13 @@ public class MainActivity extends AppCompatActivity {
                 priceNew, 
                 imageUrl.trim()
             );
+            // Lưu ID sản phẩm từ MongoDB
+            product.id = productResponse.getId();
             // Đảm bảo imageUrl được set
             product.imageUrl = imageUrl.trim();
             // Đảm bảo imageRes = 0 khi dùng imageUrl
             product.imageRes = 0;
-            Log.d("MainActivity", "✅ Created product with imageUrl: " + product.imageUrl);
+            Log.d("MainActivity", "✅ Created product with imageUrl: " + product.imageUrl + ", ID: " + product.id);
             return product;
         } else {
             // Nếu không có URL ảnh, dùng ảnh mặc định
@@ -688,10 +692,12 @@ public class MainActivity extends AppCompatActivity {
                 priceNew, 
                 R.drawable.giaymau
             );
+            // Lưu ID sản phẩm từ MongoDB
+            product.id = productResponse.getId();
             // Đảm bảo imageUrl = null và imageRes được set
             product.imageUrl = null;
             product.imageRes = R.drawable.giaymau;
-            Log.d("MainActivity", "✅ Created product with default image (imageRes: " + product.imageRes + ")");
+            Log.d("MainActivity", "✅ Created product with default image (imageRes: " + product.imageRes + "), ID: " + product.id);
             return product;
         }
     }

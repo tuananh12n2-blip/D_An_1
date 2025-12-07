@@ -2,6 +2,7 @@ package com.poly.ban_giay_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -55,6 +56,16 @@ public class AccountActivity extends AppCompatActivity {
 
     private void bindActions() {
         btnBack.setOnClickListener(v -> finish());
+        
+        // Đơn hàng
+        View layoutOrders = findViewById(R.id.layoutOrders);
+        if (layoutOrders != null) {
+            layoutOrders.setOnClickListener(v -> {
+                Intent intent = new Intent(AccountActivity.this, OrderActivity.class);
+                startActivity(intent);
+            });
+        }
+        
         layoutLogout.setOnClickListener(v -> {
             sessionManager.logout();
             Toast.makeText(this, R.string.logout_success, Toast.LENGTH_SHORT).show();

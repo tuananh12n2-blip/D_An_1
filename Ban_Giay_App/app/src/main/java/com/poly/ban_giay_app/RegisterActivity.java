@@ -43,6 +43,7 @@ public class RegisterActivity extends AppCompatActivity {
             return insets;
         });
 
+        ApiClient.init(this);
         apiService = ApiClient.getApiService();
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.registering));

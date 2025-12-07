@@ -101,6 +101,59 @@ public interface ApiService {
     @DELETE("product/{id}")
     Call<BaseResponse<Void>> deleteProduct(@Path("id") String id);
 
+    // ==================== CART APIs ====================
+    // POST http://YOUR_IP:3000/api/cart
+    // Thêm sản phẩm vào giỏ hàng
+    @POST("cart")
+    Call<BaseResponse<Void>> addToCart(@Body com.poly.ban_giay_app.network.request.CartRequest request);
+
+    // GET http://YOUR_IP:3000/api/cart?user_id=xxx
+    // Lấy giỏ hàng của user
+    @GET("cart")
+    Call<BaseResponse<com.poly.ban_giay_app.network.model.CartResponse>> getCart(@Query("user_id") String userId);
+
+    // PUT http://YOUR_IP:3000/api/cart/item
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
+    @PUT("cart/item")
+    Call<BaseResponse<Void>> updateCartItem(@Body com.poly.ban_giay_app.network.request.CartRequest request);
+
+    // DELETE http://YOUR_IP:3000/api/cart/item
+    // Xóa sản phẩm khỏi giỏ hàng
+    @DELETE("cart/item")
+    Call<BaseResponse<Void>> removeFromCart(@Body com.poly.ban_giay_app.network.request.CartRequest request);
+
+    // ==================== ORDER APIs ====================
+    // POST http://YOUR_IP:3000/api/order
+    // Tạo đơn hàng mới
+    @POST("order")
+    Call<BaseResponse<com.poly.ban_giay_app.network.model.OrderResponse>> createOrder(@Body com.poly.ban_giay_app.network.request.OrderRequest request);
+
+    // GET http://YOUR_IP:3000/api/order?user_id=xxx&trang_thai=xxx
+    // Lấy danh sách đơn hàng của user (có thể filter theo trạng thái)
+    @GET("order")
+    Call<BaseResponse<List<com.poly.ban_giay_app.network.model.OrderResponse>>> getOrders(
+            @Query("user_id") String userId,
+            @Query("trang_thai") String trangThai
+    );
+
+    // GET http://YOUR_IP:3000/api/order/{orderId}
+    // Lấy chi tiết đơn hàng
+    @GET("order/{orderId}")
+    Call<BaseResponse<com.poly.ban_giay_app.network.model.OrderResponse>> getOrderById(@Path("orderId") String orderId);
+
+    // PUT http://YOUR_IP:3000/api/order/{orderId}/status
+    // Cập nhật trạng thái đơn hàng
+    @PUT("order/{orderId}/status")
+    Call<BaseResponse<com.poly.ban_giay_app.network.model.OrderResponse>> updateOrderStatus(
+            @Path("orderId") String orderId,
+            @Body com.poly.ban_giay_app.network.request.UpdateOrderStatusRequest request
+    );
+
+    // PUT http://YOUR_IP:3000/api/order/{orderId}/cancel
+    // Hủy đơn hàng
+    @PUT("order/{orderId}/cancel")
+    Call<BaseResponse<com.poly.ban_giay_app.network.model.OrderResponse>> cancelOrder(@Path("orderId") String orderId);
+
     // ==================== LEGACY APIs (Giữ lại để tương thích) ====================
     // Lấy danh sách sản phẩm bán chạy (legacy)
     @GET("products/top-selling")
